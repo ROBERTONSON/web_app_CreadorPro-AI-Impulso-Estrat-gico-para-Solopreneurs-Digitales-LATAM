@@ -14,6 +14,8 @@ export type CommunicationStyle =
   | 'creativo'
   | 'autoridad'
 
+export type NicheDifficulty = 'bajo' | 'medio' | 'alto'
+
 export interface Profile {
   experience: ExperienceLevel
   skills: string
@@ -28,20 +30,62 @@ export interface WizardData {
   style: CommunicationStyle
 }
 
+export interface NicheDetail {
+  name: string
+  difficulty: NicheDifficulty
+  economic_potential: string
+  why: string
+}
+
+export interface SwotAnalysis {
+  strengths: string[]
+  weaknesses: string[]
+  opportunities: string[]
+  threats: string[]
+}
+
 export interface StrategyReport {
-  niches: string[]
+  // Executive summary
+  executive_summary: string
+  top_3_opportunities: string[]
+
+  // Niches (enhanced)
+  niches: NicheDetail[]
+
+  // Core strategy
   value_proposition: string
   suggested_services: string[]
+  pricing_suggestions: string[]
+  differentiators: string[]
+  competitive_positioning: string
+
+  // Acquisition
+  acquisition_strategy: string
+  prospecting_messages: string[]
+  first_ideal_client: string
+
+  // Content
   content_strategy: string
   post_ideas: string[]
-  differentiators: string[]
-  acquisition_strategy: string
+  post_hooks: string[]
+  first_30_days_content: string[]
+
+  // Social
+  linkedin_strategy: string
+  instagram_strategy: string
+  linkedin_bio: string
+  instagram_bio: string
+
+  // Business
   commercial_offer: string
   pitch: string
   growth_roadmap: string[]
-  linkedin_strategy: string
-  instagram_strategy: string
+  seven_day_plan: string[]
+  common_mistakes: string[]
+  useful_tools: string[]
+
+  // Analysis
+  swot: SwotAnalysis
   ideal_clients: string
-  competitive_positioning: string
   first_content: string
 }

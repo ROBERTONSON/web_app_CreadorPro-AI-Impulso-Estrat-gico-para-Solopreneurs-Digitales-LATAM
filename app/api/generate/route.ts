@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     const { system, user } = buildPrompt(wizardData)
 
     const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 30_000)
+    const timeout = setTimeout(() => controller.abort(), 60_000)
 
     try {
       const completion = await groq.chat.completions.create({
@@ -19,8 +19,8 @@ export async function POST(request: Request) {
           { role: 'system', content: system },
           { role: 'user', content: user },
         ],
-        temperature: 0.7,
-        max_tokens: 4096,
+        temperature: 0.75,
+        max_tokens: 8192,
       })
 
       clearTimeout(timeout)
