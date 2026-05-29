@@ -47,7 +47,7 @@ export default function StepProfile({ data, onNext }: StepProfileProps) {
         <div className="space-y-2">
           <Label htmlFor="experience">Nivel de experiencia</Label>
           <Select
-            value={form.experience}
+            value={form.experience ?? ''}
             onValueChange={(v) => setForm(f => ({ ...f, experience: v as ExperienceLevel }))}
           >
             <SelectTrigger id="experience" className={errors.experience ? 'border-red-500' : ''}>
