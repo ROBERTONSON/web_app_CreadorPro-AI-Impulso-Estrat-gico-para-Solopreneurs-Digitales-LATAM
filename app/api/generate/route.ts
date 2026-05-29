@@ -1,10 +1,11 @@
-import { groq } from '@/lib/groq/client'
+import { getGroqClient } from '@/lib/groq/client'
 import { buildPrompt } from '@/lib/groq/prompt-builder'
 import { parseStrategyReport } from '@/lib/groq/parser'
 import type { WizardData } from '@/lib/types'
 
 export async function POST(request: Request) {
   try {
+    const groq = getGroqClient()
     const wizardData: WizardData = await request.json()
 
     const { system, user } = buildPrompt(wizardData)
