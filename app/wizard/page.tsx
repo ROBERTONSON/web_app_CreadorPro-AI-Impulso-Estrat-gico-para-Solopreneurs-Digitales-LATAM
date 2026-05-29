@@ -56,8 +56,14 @@ export default function WizardPage() {
       })
 
       if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error ?? 'Error desconocido')
+        let errorMsg = 'No se pudo generar el plan. Por favor intenta de nuevo.'
+        try {
+          const data = await res.json()
+          if (typeof data.error === 'string') errorMsg = data.error
+        } catch {
+          // ignore parse error
+        }
+        throw new Error(errorMsg)
       }
 
       const report: StrategyReport = await res.json()
