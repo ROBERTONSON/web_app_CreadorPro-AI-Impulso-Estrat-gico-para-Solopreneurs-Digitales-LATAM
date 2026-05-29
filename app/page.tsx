@@ -1,101 +1,94 @@
-import Image from "next/image";
+import Link from 'next/link'
+import { ArrowRight, Sparkles, Target, Zap, Users } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Nav */}
+      <nav className="border-b border-border px-6 py-4">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
+              <span className="text-white text-xs font-bold">CP</span>
+            </div>
+            <span className="font-semibold text-foreground">CreadorPro AI</span>
+          </div>
+          <Link href="/wizard">
+            <Button size="sm" className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white">
+              Comenzar gratis
+            </Button>
+          </Link>
+        </div>
+      </nav>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      {/* Hero */}
+      <main className="flex-1 flex flex-col items-center justify-center px-4 py-20 text-center">
+        {/* Badge */}
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-violet-800 bg-violet-950/30 text-violet-300 text-sm mb-8">
+          <Sparkles className="h-3.5 w-3.5" />
+          <span>Consultor estratégico IA para LATAM</span>
+        </div>
+
+        {/* Headline */}
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-foreground max-w-3xl leading-tight mb-6">
+          Tu estrategia de negocio digital,{' '}
+          <span className="bg-gradient-to-r from-violet-400 to-indigo-400 bg-clip-text text-transparent">
+            generada por IA
+          </span>
+        </h1>
+
+        {/* Subheadline */}
+        <p className="text-lg text-muted-foreground max-w-xl mb-10">
+          Responde 3 preguntas sobre tu perfil y recibe un plan estratégico completo: nichos, servicios, contenido, pitch y roadmap de crecimiento.
+        </p>
+
+        {/* CTA */}
+        <Link href="/wizard">
+          <Button
+            size="lg"
+            className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white px-8 h-12 text-base"
           >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            Generar mi plan estratégico
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </Button>
+        </Link>
+        <p className="mt-3 text-xs text-muted-foreground">Gratis · Sin registro · Listo en 30 segundos</p>
+
+        {/* Features */}
+        <div className="mt-20 grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl w-full">
+          {[
+            {
+              icon: Target,
+              title: 'Nichos rentables',
+              desc: 'Identifica los segmentos de mercado con mayor potencial para tu perfil en LATAM',
+            },
+            {
+              icon: Zap,
+              title: 'Plan completo en segundos',
+              desc: 'Propuesta de valor, servicios, estrategia de contenido y pitch profesional',
+            },
+            {
+              icon: Users,
+              title: 'Hecho para LATAM',
+              desc: 'Recomendaciones contextualizadas para el mercado digital latinoamericano',
+            },
+          ].map(({ icon: Icon, title, desc }) => (
+            <div key={title} className="bg-card border border-border rounded-xl p-5 text-left">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center mb-3">
+                <Icon className="h-4 w-4 text-white" />
+              </div>
+              <h3 className="font-semibold text-foreground mb-1">{title}</h3>
+              <p className="text-sm text-muted-foreground">{desc}</p>
+            </div>
+          ))}
         </div>
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      {/* Footer */}
+      <footer className="border-t border-border px-6 py-4 text-center">
+        <p className="text-xs text-muted-foreground">CreadorPro AI · Para freelancers, creadores y micro-agencias de LATAM</p>
       </footer>
     </div>
-  );
+  )
 }
