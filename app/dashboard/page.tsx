@@ -17,9 +17,10 @@ import {
   UserCheck, Trophy, FileText, RefreshCw, Loader2,
   Copy, Check, Download, Hash, MessageSquare,
   AlertOctagon, Wrench, Calendar, UserPlus, TrendingUp,
-  BarChart3
+  BarChart3, Home
 } from 'lucide-react'
 import { LucideIcon } from 'lucide-react'
+import Link from 'next/link'
 
 interface Section {
   id: string
@@ -159,17 +160,27 @@ export default function DashboardPage() {
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
 
       const pageWidth = doc.internal.pageSize.getWidth()
+      const pageHeight = doc.internal.pageSize.getHeight()
       const margin = 20
       const maxWidth = pageWidth - margin * 2
       let y = 20
+
+      // Fill background black for every page
+      const fillBackground = () => {
+        doc.setFillColor(10, 10, 10)
+        doc.rect(0, 0, pageWidth, pageHeight, 'F')
+      }
+
+      fillBackground()
 
       const addText = (text: string, size: number, bold = false, color: [number, number, number] = [245, 245, 245]) => {
         doc.setFontSize(size)
         doc.setFont('helvetica', bold ? 'bold' : 'normal')
         doc.setTextColor(...color)
         const lines = doc.splitTextToSize(text, maxWidth)
-        if (y + lines.length * (size * 0.4) > 280) {
+        if (y + lines.length * (size * 0.4) > pageHeight - 15) {
           doc.addPage()
+          fillBackground()
           y = 20
         }
         doc.text(lines, margin, y)
@@ -183,10 +194,6 @@ export default function DashboardPage() {
         addText(text, 9, false, [200, 200, 200])
         y += 2
       }
-
-      // Background
-      doc.setFillColor(10, 10, 10)
-      doc.rect(0, 0, pageWidth, 297, 'F')
 
       // Title
       addText('CREADORPRO AI', 20, true, [167, 139, 250])
@@ -245,6 +252,14 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Home button */}
+            <Link href="/">
+              <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
+                <Home className="h-3 w-3" />
+                <span className="hidden sm:inline">Inicio</span>
+              </Button>
+            </Link>
+
             {/* Copy all */}
             <Button variant="outline" size="sm" onClick={handleCopyAll} className="h-8 text-xs gap-1.5">
               {copiedAll ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
