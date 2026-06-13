@@ -16,24 +16,18 @@ export async function POST() {
       {
         id: 'creadorpro-premium',
         title: 'CreadorPro AI Premium',
-        description: 'Plan mensual con generaciones ilimitadas y todas las funcionalidades',
+        description: 'Plan mensual con generaciones y todas las funcionalidades premium',
         quantity: 1,
         currency_id: 'CLP',
         unit_price: 5990,
       },
     ],
-    payer: {
-      email: user.email,
-    },
     external_reference: user.id,
     back_urls: {
       success: `${appUrl}/upgrade/success`,
       failure: `${appUrl}/upgrade/failure`,
       pending: `${appUrl}/upgrade/pending`,
     },
-    // auto_return only works with public HTTPS URLs — disabled in local dev
-    ...(appUrl.startsWith('https') ? { auto_return: 'approved' } : {}),
-    // notification_url only works on a public URL — skip in local dev
     ...(appUrl.startsWith('https') ? { notification_url: `${appUrl}/api/webhooks/mercadopago` } : {}),
   }
 
@@ -53,7 +47,7 @@ export async function POST() {
   }
 
   const data = await res.json()
-  // In test mode use sandbox_init_point, in production use init_point
-  const init_point = data.sandbox_init_point ?? data.init_point
+  // Always use init_point — with TEST token it still goes to sandbox
+  const init_point = data.init_point
   return NextResponse.json({ init_point })
 }

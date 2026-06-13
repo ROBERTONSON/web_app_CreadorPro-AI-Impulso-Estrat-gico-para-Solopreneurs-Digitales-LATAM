@@ -101,8 +101,12 @@ export default function DashboardPage() {
       router.push('/wizard')
       return
     }
-    setReport(JSON.parse(stored))
-    if (storedWizard) setWizardData(JSON.parse(storedWizard))
+    try {
+      setReport(JSON.parse(stored))
+      if (storedWizard) setWizardData(JSON.parse(storedWizard))
+    } catch {
+      router.push('/wizard')
+    }
   }, [router])
 
   const handleRegenerate = async () => {
