@@ -10,6 +10,15 @@ import ExecutiveSummary from '@/components/dashboard/ExecutiveSummary'
 import SwotCard from '@/components/dashboard/SwotCard'
 import SevenDayPlan from '@/components/dashboard/SevenDayPlan'
 import BioCard from '@/components/dashboard/BioCard'
+import BuyerPersona from '@/components/dashboard/BuyerPersona'
+import ProjectHistory from '@/components/dashboard/ProjectHistory'
+import BrandNames from '@/components/dashboard/BrandNames'
+import IncomeCalculator from '@/components/dashboard/IncomeCalculator'
+import BusinessCanvas from '@/components/dashboard/BusinessCanvas'
+import { useAuth } from '@/hooks/useAuth'
+import { usePlan } from '@/hooks/usePlan'
+import PaywallModal from '@/components/PaywallModal'
+import PremiumLock from '@/components/PremiumLock'
 import { Button } from '@/components/ui/button'
 import {
   Lightbulb, Briefcase, BookOpen, PenSquare,
@@ -17,7 +26,7 @@ import {
   UserCheck, Trophy, FileText, RefreshCw, Loader2,
   Copy, Check, Download, Hash, MessageSquare,
   AlertOctagon, Wrench, Calendar, UserPlus, TrendingUp,
-  BarChart3, Home
+  BarChart3, Home, Clock, LogOut,
 } from 'lucide-react'
 import { LucideIcon } from 'lucide-react'
 import Link from 'next/link'
@@ -40,8 +49,6 @@ const SECTIONS: Section[] = [
   { id: 'pricing_suggestions', title: 'Precios Sugeridos', icon: DollarSign, group: 'strategy' },
   { id: 'differentiators', title: 'Diferenciadores', icon: Zap, group: 'strategy' },
   { id: 'competitive_positioning', title: 'Posicionamiento', icon: Trophy, group: 'strategy' },
-
-  // Acquisition
   { id: 'acquisition_strategy', title: 'Estrategia de Captación', icon: Users, group: 'strategy' },
   { id: 'prospecting_messages', title: 'Mensajes de Prospección', icon: MessageSquare, group: 'strategy' },
   { id: 'first_ideal_client', title: 'Primer Cliente Ideal', icon: UserPlus, group: 'strategy' },
@@ -63,13 +70,21 @@ const SECTIONS: Section[] = [
   { id: 'common_mistakes', title: 'Errores a Evitar', icon: AlertOctagon, group: 'business' },
 
   // Analysis
+  { id: 'buyer_persona', title: 'Buyer Persona', icon: Users, group: 'analysis' },
+  { id: 'brand_names', title: 'Nombres de Marca', icon: Zap, group: 'analysis' },
+  { id: 'income_calculator', title: 'Calculadora de Ingresos', icon: DollarSign, group: 'analysis' },
+  { id: 'business_canvas', title: 'Business Model Canvas', icon: Briefcase, group: 'business' },
   { id: 'swot', title: 'Análisis FODA', icon: BarChart3, group: 'analysis' },
   { id: 'ideal_clients', title: 'Clientes Ideales', icon: UserCheck, group: 'analysis' },
   { id: 'first_content', title: 'Primer Contenido', icon: FileText, group: 'analysis' },
+  { id: 'history', title: 'Historial de Planes', icon: Clock, group: 'analysis' },
 ]
 
 export default function DashboardPage() {
   const router = useRouter()
+  const { user, loading: authLoading, signOut } = useAuth()
+  const { isPremium, generationsUsed, generationsLeft, canGenerate } = usePlan(user)
+  const [showPaywall, setShowPaywall] = useState<'generation_limit' | 'premium_feature' | null>(null)
   const [report, setReport] = useState<StrategyReport | null>(null)
   const [wizardData, setWizardData] = useState<WizardData | null>(null)
   const [isRegenerating, setIsRegenerating] = useState(false)
@@ -91,6 +106,7 @@ export default function DashboardPage() {
 
   const handleRegenerate = async () => {
     if (!wizardData) return
+    if (!canGenerate) { setShowPaywall('generation_limit'); return }
     setIsRegenerating(true)
     setShowConfirm(false)
     try {
@@ -127,6 +143,14 @@ export default function DashboardPage() {
       // silently fail
     }
   }, [wizardData, report])
+
+  const handleLoadProject = useCallback((loadedReport: StrategyReport, loadedWizardData: WizardData) => {
+    sessionStorage.setItem('creadorpro_report', JSON.stringify(loadedReport))
+    sessionStorage.setItem('creadorpro_wizard', JSON.stringify(loadedWizardData))
+    setReport(loadedReport)
+    setWizardData(loadedWizardData)
+    setActiveSection('executive')
+  }, [])
 
   const handleCopyAll = async () => {
     if (!report) return
@@ -165,12 +189,10 @@ export default function DashboardPage() {
       const maxWidth = pageWidth - margin * 2
       let y = 20
 
-      // Fill background black for every page
       const fillBackground = () => {
         doc.setFillColor(10, 10, 10)
         doc.rect(0, 0, pageWidth, pageHeight, 'F')
       }
-
       fillBackground()
 
       const addText = (text: string, size: number, bold = false, color: [number, number, number] = [245, 245, 245]) => {
@@ -195,7 +217,6 @@ export default function DashboardPage() {
         y += 2
       }
 
-      // Title
       addText('CREADORPRO AI', 20, true, [167, 139, 250])
       addText('Tu Plan Estratégico Personalizado', 12, false, [163, 163, 163])
       y += 4
@@ -241,6 +262,15 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-background flex">
       <Sidebar sections={SECTIONS} activeSection={activeSection} onSectionChange={setActiveSection} />
 
+      {/* Paywall modal */}
+      {showPaywall && (
+        <PaywallModal
+          reason={showPaywall}
+          generationsUsed={generationsUsed}
+          onClose={showPaywall === 'premium_feature' ? () => setShowPaywall(null) : undefined}
+        />
+      )}
+
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
         <header className="border-b border-border px-4 sm:px-6 py-3 flex items-center justify-between sticky top-0 bg-background/95 backdrop-blur z-10">
@@ -252,11 +282,11 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Home button */}
-            <Link href="/">
+            {/* New plan button */}
+            <Link href="/wizard">
               <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
                 <Home className="h-3 w-3" />
-                <span className="hidden sm:inline">Inicio</span>
+                <span className="hidden sm:inline">Nuevo plan</span>
               </Button>
             </Link>
 
@@ -272,7 +302,22 @@ export default function DashboardPage() {
               <span className="hidden sm:inline">PDF</span>
             </Button>
 
-            {/* Regenerate */}
+            {/* Plan badge + generations */}
+            {!isPremium && (
+              <button
+                onClick={() => setShowPaywall('generation_limit')}
+                className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-amber-800 bg-amber-950/30 text-amber-300 text-xs hover:bg-amber-950/50 transition-colors"
+              >
+                <Zap className="h-3 w-3" />
+                {generationsLeft}/3 gratis
+              </button>
+            )}
+            {isPremium && (
+              <span className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-violet-700 bg-violet-950/30 text-violet-300 text-xs">
+                <Zap className="h-3 w-3" />
+                Premium · {generationsLeft}/90
+              </span>
+            )}
             {showConfirm ? (
               <div className="flex items-center gap-1.5">
                 <span className="text-xs text-muted-foreground hidden sm:inline">¿Regenerar?</span>
@@ -285,6 +330,41 @@ export default function DashboardPage() {
                 <span className="hidden sm:inline">{isRegenerating ? 'Regenerando...' : 'Regenerar'}</span>
               </Button>
             )}
+
+            {/* User avatar / login */}
+            {!authLoading && (
+              user ? (
+                <div className="flex items-center gap-2">
+                  {user.user_metadata?.avatar_url ? (
+                    <img
+                      src={user.user_metadata.avatar_url}
+                      alt={user.user_metadata?.full_name ?? 'Usuario'}
+                      className="w-7 h-7 rounded-full border border-border"
+                    />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-violet-700 flex items-center justify-center text-white text-xs font-bold">
+                      {(user.user_metadata?.full_name ?? user.email ?? 'U')[0].toUpperCase()}
+                    </div>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={signOut}
+                    className="h-8 text-xs gap-1.5 text-muted-foreground hover:text-foreground"
+                    title="Cerrar sesión"
+                  >
+                    <LogOut className="h-3 w-3" />
+                    <span className="hidden sm:inline">Salir</span>
+                  </Button>
+                </div>
+              ) : (
+                <Link href="/login">
+                  <Button variant="outline" size="sm" className="h-8 text-xs">
+                    Iniciar sesión
+                  </Button>
+                </Link>
+              )
+            )}
           </div>
         </header>
 
@@ -293,12 +373,10 @@ export default function DashboardPage() {
           <MetricsSummary report={report} />
 
           <div className="mt-8 space-y-6">
-            {/* Executive Summary + Top 3 + Niches */}
             <div id="executive" className="scroll-mt-20">
-              <ExecutiveSummary report={report} />
+              <ExecutiveSummary report={report} wizardData={wizardData} />
             </div>
 
-            {/* 7-day plan */}
             <div id="seven_day_plan" className="bg-card border border-border rounded-xl overflow-hidden scroll-mt-20">
               <div className="px-5 py-3.5 border-b border-border flex items-center gap-3 bg-gradient-to-r from-violet-950/20 to-indigo-950/20">
                 <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
@@ -311,7 +389,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Strategy sections */}
             <ReportCard id="value_proposition" title="Propuesta de Valor" icon={Lightbulb} content={report.value_proposition} onRegenerate={() => handleRegenerateSection('value_proposition')} />
             <ReportCard id="suggested_services" title="Servicios Sugeridos" icon={Briefcase} content={report.suggested_services} onRegenerate={() => handleRegenerateSection('suggested_services')} />
             <ReportCard id="pricing_suggestions" title="Precios Sugeridos para LATAM" icon={DollarSign} content={report.pricing_suggestions} onRegenerate={() => handleRegenerateSection('pricing_suggestions')} />
@@ -321,7 +398,6 @@ export default function DashboardPage() {
             <ReportCard id="prospecting_messages" title="Mensajes de Prospección" icon={MessageSquare} content={report.prospecting_messages} onRegenerate={() => handleRegenerateSection('prospecting_messages')} />
             <ReportCard id="first_ideal_client" title="Primer Cliente Ideal a Buscar" icon={UserPlus} content={report.first_ideal_client} onRegenerate={() => handleRegenerateSection('first_ideal_client')} />
 
-            {/* Content sections */}
             <ReportCard id="content_strategy" title="Estrategia de Contenido" icon={BookOpen} content={report.content_strategy} onRegenerate={() => handleRegenerateSection('content_strategy')} />
             <ReportCard id="post_ideas" title="Ideas de Publicaciones" icon={PenSquare} content={report.post_ideas} onRegenerate={() => handleRegenerateSection('post_ideas')} />
             <ReportCard id="post_hooks" title="Hooks para Publicaciones" icon={Hash} content={report.post_hooks} onRegenerate={() => handleRegenerateSection('post_hooks')} />
@@ -329,7 +405,6 @@ export default function DashboardPage() {
             <ReportCard id="linkedin_strategy" title="Estrategia LinkedIn" icon={Link2} content={report.linkedin_strategy} onRegenerate={() => handleRegenerateSection('linkedin_strategy')} />
             <ReportCard id="instagram_strategy" title="Estrategia Instagram" icon={Camera} content={report.instagram_strategy} onRegenerate={() => handleRegenerateSection('instagram_strategy')} />
 
-            {/* Bios */}
             <div id="bios" className="scroll-mt-20">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
@@ -340,12 +415,63 @@ export default function DashboardPage() {
               <BioCard linkedinBio={report.linkedin_bio} instagramBio={report.instagram_bio} />
             </div>
 
-            {/* Business sections */}
             <ReportCard id="commercial_offer" title="Oferta Comercial" icon={DollarSign} content={report.commercial_offer} onRegenerate={() => handleRegenerateSection('commercial_offer')} />
             <ReportCard id="pitch" title="Pitch Profesional" icon={Mic} content={report.pitch} onRegenerate={() => handleRegenerateSection('pitch')} />
             <ReportCard id="growth_roadmap" title="Roadmap de Crecimiento" icon={Map} content={report.growth_roadmap} onRegenerate={() => handleRegenerateSection('growth_roadmap')} />
             <ReportCard id="useful_tools" title="Herramientas Útiles" icon={Wrench} content={report.useful_tools} />
             <ReportCard id="common_mistakes" title="Errores Comunes a Evitar" icon={AlertOctagon} content={report.common_mistakes} />
+
+            {/* Business Model Canvas */}
+            <div id="business_canvas" className="bg-card border border-border rounded-xl overflow-hidden scroll-mt-20">
+              <div className="px-5 py-3.5 border-b border-border flex items-center gap-3 bg-gradient-to-r from-violet-950/20 to-indigo-950/20">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
+                  <Briefcase className="h-3.5 w-3.5 text-white" />
+                </div>
+                <h2 className="font-semibold text-foreground text-sm">Business Model Canvas</h2>
+              </div>
+              <div className="px-5 py-4">
+                {isPremium ? <BusinessCanvas report={report} wizardData={wizardData} /> : <PremiumLock feature="Business Model Canvas" />}
+              </div>
+            </div>
+
+            {/* Buyer Persona */}
+            <div id="buyer_persona" className="bg-card border border-border rounded-xl overflow-hidden scroll-mt-20">
+              <div className="px-5 py-3.5 border-b border-border flex items-center gap-3 bg-gradient-to-r from-violet-950/20 to-indigo-950/20">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
+                  <Users className="h-3.5 w-3.5 text-white" />
+                </div>
+                <h2 className="font-semibold text-foreground text-sm">Buyer Persona</h2>
+              </div>
+              <div className="px-5 py-4">
+                {isPremium ? <BuyerPersona report={report} wizardData={wizardData} /> : <PremiumLock feature="Buyer Persona" />}
+              </div>
+            </div>
+
+            {/* Brand Names */}
+            <div id="brand_names" className="bg-card border border-border rounded-xl overflow-hidden scroll-mt-20">
+              <div className="px-5 py-3.5 border-b border-border flex items-center gap-3 bg-gradient-to-r from-violet-950/20 to-indigo-950/20">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
+                  <Zap className="h-3.5 w-3.5 text-white" />
+                </div>
+                <h2 className="font-semibold text-foreground text-sm">Nombres de Marca y Eslóganes</h2>
+              </div>
+              <div className="px-5 py-4">
+                {isPremium ? <BrandNames report={report} wizardData={wizardData} /> : <PremiumLock feature="Generador de Nombres de Marca" />}
+              </div>
+            </div>
+
+            {/* Income Calculator */}
+            <div id="income_calculator" className="bg-card border border-border rounded-xl overflow-hidden scroll-mt-20">
+              <div className="px-5 py-3.5 border-b border-border flex items-center gap-3 bg-gradient-to-r from-violet-950/20 to-indigo-950/20">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
+                  <DollarSign className="h-3.5 w-3.5 text-white" />
+                </div>
+                <h2 className="font-semibold text-foreground text-sm">Calculadora de Ingresos</h2>
+              </div>
+              <div className="px-5 py-4">
+                {isPremium ? <IncomeCalculator report={report} /> : <PremiumLock feature="Calculadora de Ingresos" />}
+              </div>
+            </div>
 
             {/* SWOT */}
             <div id="swot" className="bg-card border border-border rounded-xl overflow-hidden scroll-mt-20">
@@ -362,6 +488,24 @@ export default function DashboardPage() {
 
             <ReportCard id="ideal_clients" title="Clientes Ideales" icon={UserCheck} content={report.ideal_clients} onRegenerate={() => handleRegenerateSection('ideal_clients')} />
             <ReportCard id="first_content" title="Primer Contenido a Publicar" icon={FileText} content={report.first_content} onRegenerate={() => handleRegenerateSection('first_content')} />
+
+            {/* Project History */}
+            <div id="history" className="bg-card border border-border rounded-xl overflow-hidden scroll-mt-20">
+              <div className="px-5 py-3.5 border-b border-border flex items-center gap-3 bg-gradient-to-r from-violet-950/20 to-indigo-950/20">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
+                  <Clock className="h-3.5 w-3.5 text-white" />
+                </div>
+                <h2 className="font-semibold text-foreground text-sm">Historial de Planes</h2>
+              </div>
+              <div className="px-5 py-4">
+                <ProjectHistory
+                  currentReport={report}
+                  currentWizardData={wizardData}
+                  onLoadProject={handleLoadProject}
+                  isAuthenticated={!!user}
+                />
+              </div>
+            </div>
           </div>
         </main>
       </div>

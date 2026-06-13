@@ -1,10 +1,12 @@
 'use client'
 
-import type { StrategyReport } from '@/lib/types'
+import type { StrategyReport, WizardData } from '@/lib/types'
 import { Sparkles, TrendingUp, AlertTriangle } from 'lucide-react'
+import { calculateNicheScore } from '@/lib/score'
 
 interface ExecutiveSummaryProps {
   report: StrategyReport
+  wizardData?: WizardData | null
 }
 
 const DIFFICULTY_CONFIG = {
@@ -13,7 +15,9 @@ const DIFFICULTY_CONFIG = {
   alto: { label: 'Alta competencia', color: 'bg-red-500/20 text-red-400 border-red-500/30' },
 }
 
-export default function ExecutiveSummary({ report }: ExecutiveSummaryProps) {
+export default function ExecutiveSummary({ report, wizardData }: ExecutiveSummaryProps) {
+  const goals = wizardData?.goals ?? []
+
   return (
     <div className="space-y-6">
       {/* Executive summary card */}
@@ -43,20 +47,36 @@ export default function ExecutiveSummary({ report }: ExecutiveSummaryProps) {
         </div>
       </div>
 
-      {/* Niches with difficulty badges */}
+      {/* Niches with score + difficulty badges */}
       <div>
         <h2 className="font-semibold text-foreground mb-4">Nichos Recomendados</h2>
         <div className="grid gap-4">
           {report.niches.map((niche, i) => {
             const diff = DIFFICULTY_CONFIG[niche.difficulty] ?? DIFFICULTY_CONFIG.medio
+            const score = calculateNicheScore(niche, goals)
             return (
               <div key={i} className="bg-card border border-border rounded-xl p-5">
-                <div className="flex items-start justify-between gap-3 mb-2">
+                <div className="flex items-start justify-between gap-3 mb-3">
                   <h3 className="font-medium text-foreground">{niche.name}</h3>
                   <span className={`text-xs px-2 py-1 rounded-full border flex-shrink-0 ${diff.color}`}>
                     {diff.label}
                   </span>
                 </div>
+
+                {/* Score bar */}
+                <div className="mb-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className={`text-xs font-semibold ${score.color}`}>{score.label}</span>
+                    <span className={`text-xs font-bold ${score.color}`}>{score.total}/100</span>
+                  </div>
+                  <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-700 ${score.barColor}`}
+                      style={{ width: `${score.total}%` }}
+                    />
+                  </div>
+                </div>
+
                 <div className="flex items-center gap-2 mb-2">
                   <TrendingUp className="h-3.5 w-3.5 text-emerald-400" />
                   <span className="text-sm text-emerald-400 font-medium">{niche.economic_potential}</span>

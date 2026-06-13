@@ -14,7 +14,7 @@ export default function HomePage() {
             </div>
             <span className="font-semibold text-foreground">CreadorPro AI</span>
           </div>
-          <Link href="/wizard">
+          <Link href="/login">
             <Button size="sm" className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white">
               Comenzar gratis
             </Button>
@@ -44,7 +44,7 @@ export default function HomePage() {
         </p>
 
         {/* CTA */}
-        <Link href="/wizard">
+        <Link href="/login">
           <Button
             size="lg"
             className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white px-8 h-12 text-base"
@@ -53,7 +53,7 @@ export default function HomePage() {
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
         </Link>
-        <p className="mt-3 text-xs text-muted-foreground">Gratis · Sin registro · Listo en 30 segundos</p>
+        <p className="mt-3 text-xs text-muted-foreground">Gratis · Listo en 30 segundos</p>
 
         {/* Features */}
         <div className="mt-20 grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl w-full">

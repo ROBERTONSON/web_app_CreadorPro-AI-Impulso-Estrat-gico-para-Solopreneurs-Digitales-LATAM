@@ -6,6 +6,7 @@ import Link from 'next/link'
 import StepProfile from '@/components/wizard/StepProfile'
 import StepGoals from '@/components/wizard/StepGoals'
 import StepStyle from '@/components/wizard/StepStyle'
+import PaywallModal from '@/components/PaywallModal'
 import type { Profile, Goal, CommunicationStyle, WizardData, StrategyReport } from '@/lib/types'
 import { Clock, AlertTriangle } from 'lucide-react'
 
@@ -82,6 +83,11 @@ export default function WizardPage() {
         return
       }
 
+      if (res.status === 403) {
+        setState(s => ({ ...s, isGenerating: false, error: 'generation_limit' }))
+        return
+      }
+
       if (!res.ok) {
         let errorMsg = 'No se pudo generar el plan. Por favor intenta de nuevo.'
         try {
@@ -112,6 +118,10 @@ export default function WizardPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* Paywall — generation limit */}
+      {state.error === 'generation_limit' && (
+        <PaywallModal reason="generation_limit" generationsUsed={3} />
+      )}
       {/* Header */}
       <header className="border-b border-border px-6 py-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between">

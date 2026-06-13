@@ -2,9 +2,13 @@ import { getApiKeys } from '@/lib/groq/client'
 import Groq from 'groq-sdk'
 import { buildPromptPart1, buildPromptPart2 } from '@/lib/groq/prompt-builder'
 import { parseStrategyReport } from '@/lib/groq/parser'
+import { createClient } from '@/lib/supabase/server'
 import type { WizardData } from '@/lib/types'
 
 export const maxDuration = 60
+
+const FREE_LIMIT = 3
+const PREMIUM_LIMIT = 90
 
 const MODELS = [
   'llama-3.3-70b-versatile', // best quality, 100k tokens/day per key
@@ -63,6 +67,42 @@ async function callWithCascade(system: string, user: string): Promise<string> {
 
 export async function POST(request: Request) {
   try {
+    // Auth + plan check
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const currentMonth = new Date().toISOString().slice(0, 7)
+
+    // Upsert profile if first time (trigger may not have fired yet)
+    await supabase
+      .from('user_profiles')
+      .upsert({ id: user.id }, { onConflict: 'id', ignoreDuplicates: true })
+
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('plan, generations_this_month, billing_month')
+      .eq('id', user.id)
+      .single()
+
+    if (profile) {
+      const effectiveCount = profile.billing_month !== currentMonth ? 0 : profile.generations_this_month
+      const limit = profile.plan === 'premium' ? PREMIUM_LIMIT : FREE_LIMIT
+
+      if (effectiveCount >= limit) {
+        return Response.json({ error: 'generation_limit_reached' }, { status: 403 })
+      }
+
+      // Increment counter
+      await supabase
+        .from('user_profiles')
+        .update({
+          generations_this_month: effectiveCount + 1,
+          billing_month: currentMonth,
+        })
+        .eq('id', user.id)
+    }
+
     const wizardData: WizardData = await request.json()
 
     const { system: sys1, user: usr1 } = buildPromptPart1(wizardData)
