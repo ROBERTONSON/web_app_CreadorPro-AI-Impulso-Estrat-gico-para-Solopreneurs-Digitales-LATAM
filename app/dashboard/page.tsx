@@ -30,6 +30,7 @@ import {
 } from 'lucide-react'
 import { LucideIcon } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface Section {
   id: string
@@ -336,9 +337,11 @@ export default function DashboardPage() {
               user ? (
                 <div className="flex items-center gap-2">
                   {user.user_metadata?.avatar_url ? (
-                    <img
+                    <Image
                       src={user.user_metadata.avatar_url}
                       alt={user.user_metadata?.full_name ?? 'Usuario'}
+                      width={28}
+                      height={28}
                       className="w-7 h-7 rounded-full border border-border"
                     />
                   ) : (

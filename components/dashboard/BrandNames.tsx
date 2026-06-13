@@ -3,9 +3,7 @@
 import { useState } from 'react'
 import type { StrategyReport, WizardData } from '@/lib/types'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Loader2, RefreshCw, Copy, Check, Lightbulb } from 'lucide-react'
-
 interface BrandName {
   name: string
   type: string
@@ -135,7 +133,7 @@ export default function BrandNames({ report, wizardData }: BrandNamesProps) {
                   </Button>
                 </div>
 
-                <p className="text-sm text-violet-300 italic">"{item.slogan}"</p>
+                <p className="text-sm text-violet-300 italic">&ldquo;{item.slogan}&rdquo;</p>
                 <p className="text-xs text-muted-foreground">{item.meaning}</p>
                 <p className="text-xs text-muted-foreground/60 font-mono">{item.domain_hint}</p>
               </div>
